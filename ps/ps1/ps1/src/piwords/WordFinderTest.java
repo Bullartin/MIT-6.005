@@ -22,5 +22,27 @@ public class WordFinderTest {
                                                               needles));
     }
 
-    // TODO: Write more tests (Problem 4.a)
+    @Test
+    public void notFoundGetSubstringsTest() {
+        // Should return an empty HashMap
+        String haystack = "abcde";
+        String[] needles = {"fg"};
+
+        Map<String, Integer> expectedOutput = new HashMap<String, Integer>();
+        
+        assertEquals(expectedOutput, WordFinder.getSubstrings(haystack, needles));
+    }
+    
+    @Test
+    public void multipleGetSubStringsTest() {
+        // Should return only the first index occurrence
+        String haystack = "ababababab";
+        String[] needles = {"ab", "bab"};
+
+        Map<String, Integer> expectedOutput = new HashMap<String, Integer>();
+        expectedOutput.put("ab", 0);
+        expectedOutput.put("bab", 1);
+        
+        assertEquals(expectedOutput, WordFinder.getSubstrings(haystack, needles));
+    }
 }

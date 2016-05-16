@@ -3,6 +3,10 @@ package piwords;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author Administrator
+ *
+ */
 public class WordFinder {
     /**
      * Given a String (the haystack) and an array of Strings (the needles),
@@ -19,7 +23,28 @@ public class WordFinder {
      */
     public static Map<String, Integer> getSubstrings(String haystack,
                                                      String[] needles) { 
-        // TODO: Implement (Problem 4.b)
-        return new HashMap<String, Integer>();
+        
+        HashMap<String, Integer> result = new HashMap<>();
+        for (String needle : needles) {
+        	if (!result.containsKey(needle)) {
+        		int index = WordFinder.findStart(haystack, needle);
+        		if (index >= 0) result.put(needle, index);
+        	}
+        }
+        return result;
+    }
+    
+    private static int findStart(String haystack, String needle) {
+    	if (haystack.length() < needle.length()) return -1;
+    	
+    	for (int i = 0; i <= haystack.length() - needle.length(); i++) {
+    		int j = 0;
+    		while (j < needle.length() && haystack.charAt(i+j) == needle.charAt(j)) {
+    			j++;
+    		}
+    		if (j == needle.length()) return i;
+    	}
+    	
+    	return -1;
     }
 }
