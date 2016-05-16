@@ -17,7 +17,32 @@ public class DigitsToStringConverterTest {
         assertEquals(expectedOutput,
                      DigitsToStringConverter.convertDigitsToString(
                              input, 4, alphabet));
+        
+        int[] input2 = {0, 3, 2, 1};
+
+        // Want to map 0 -> "d", 1 -> "c", 2 -> "b", 3 -> "a"
+        char[] alphabet2 = {'d', 'c', 'b', 'a'};
+
+        expectedOutput = "dabc";
+        assertEquals(expectedOutput,
+                     DigitsToStringConverter.convertDigitsToString(
+                             input2, 4, alphabet2));
     }
 
-    // TODO: Write more tests (Problem 3.a)
+    @Test
+    public void nulltestsNumberSerializerTest() {
+        // Check the null cases
+        
+        // one of input[i] >= base
+        int[] input = {0, 1, 2, 4};
+        char[] alphabet = {'d', 'c', 'b', 'a'};
+        assertNull(DigitsToStringConverter.convertDigitsToString(input, 4, alphabet));
+        // one of input[i] < 0
+        int[] input1 = {0, -1, 2, 3};
+        assertNull(DigitsToStringConverter.convertDigitsToString(input1, 4, alphabet));
+        
+        // alphabet.length != base
+        int[] input2 = {0, 1, 2, 3};
+        assertNull(DigitsToStringConverter.convertDigitsToString(input2, 5, alphabet));
+    }
 }
