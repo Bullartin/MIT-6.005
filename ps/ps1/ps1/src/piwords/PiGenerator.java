@@ -13,7 +13,12 @@ public class PiGenerator {
      */
     public static int[] computePiInHex(int precision) {
         // TODO: Implement (Problem 1.d)
-        return new int[0];
+    	if (precision < 0) { return null; }
+    	int[] result = new int[precision];
+    	for (int i = 1; i <= precision; i++) {
+    		result[i-1] = PiGenerator.piDigit(i);
+    	}
+        return result;
     }
 
     /**
@@ -28,7 +33,11 @@ public class PiGenerator {
      */
     public static int powerMod(int a, int b, int m) {
         // TODO: Implement (Problem 1.b)
-        return -1;
+    	if (a >= 0 && b >= 0 && m >= 0) {
+    		return (int) (Math.pow(a, b) % m);
+    	} else {
+    		return -1;
+    	}
     }
     
     /**
