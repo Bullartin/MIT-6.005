@@ -1,5 +1,10 @@
 package piwords;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collections;
+
 public class AlphabetGenerator {
     /**
      * Given a numeric base, return a char[] that maps every digit that is
@@ -52,7 +57,43 @@ public class AlphabetGenerator {
      */
     public static char[] generateFrequencyAlphabet(int base,
                                                    String[] trainingData) {
-        // TODO: Implement (Problem 5.b)
-        return null;
+        if (base < 0) return null;
+                
+        Map<Character, Integer> map = new HashMap<>();
+    	ArrayList<Character> letters = new ArrayList<>();
+    	int total = 0;
+        for (String s: trainingData) {
+        	for (int i = 0; i < s.length(); i++) {
+        		Character c = s.charAt(i);
+        		if (c >= 'a' && c <= 'z') {
+        			if (map.containsKey(c)) {
+        				map.put(c, map.get(c)+1);
+        			}
+            		else {
+            			letters.add(c);
+            			map.put(c, 1);
+            		};
+        			total++;
+        		}
+        	}
+        }
+        
+        Collections.sort(letters);
+        char[] output = new char[base];
+        int cur = 0;
+        for (Character c : letters) {
+        	float temp = ((float) map.get(c)) / total * base;
+        	int end;
+        	if (temp >= ((int) temp) + 0.5) {
+        		end = ((int) temp) + 1;
+        	} else {
+        		end = ((int) temp);
+        	}
+        	for (int i = 0; i < end && cur+i < base; i++) {
+        		output[cur+i] = c;
+        	}
+        	cur += end;
+        }
+        return output;
     }
 }

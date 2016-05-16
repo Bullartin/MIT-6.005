@@ -19,5 +19,58 @@ public class AlphabetGeneratorTest {
                         10, trainingData));
     }
 
-    // TODO: Write more tests (Problem 5.a)
+    @Test
+    public void zeroBaseFrequencyAlphabetTest() {
+    	String[] trainingData = {"aa", "bbc"};
+    	char[] result = {};
+    	assertArrayEquals(result, AlphabetGenerator.generateFrequencyAlphabet(0, trainingData));
+    }
+    
+    @Test
+    public void negativeBaseFrequencyAlphabetTest() {
+    	String[] trainingData = {"aa", "bb"};
+    	assertNull(AlphabetGenerator.generateFrequencyAlphabet(-1, trainingData));
+    }
+    
+    @Test
+    public void ignoredCharFrequencyAlphabetTest() {
+        // Test to make sure that non a-z chars are ignored
+    	String[] trainingData= {"128abc", "cx-!!@#$%&^*&*"};
+    	char[] expectedOutput = {'a', 'a', 'b', 'b',
+    							 'c', 'c', 'c', 'c',
+    							 'x', 'x'};
+    	assertArrayEquals(expectedOutput, AlphabetGenerator.generateFrequencyAlphabet(10, trainingData));
+    }
+    
+    @Test
+    public void charOrderFrequencyAlphabetTest() {
+    	// The returned output should be sorted
+    	
+    	String[] trainingData = {"zaz", "xy"};
+    	char[] expectedOutput = {'a', 'a', 'x', 'x',
+    							 'y', 'y', 'z', 'z',
+    							 'z', 'z'};
+    	assertArrayEquals(expectedOutput, AlphabetGenerator.generateFrequencyAlphabet(10, trainingData));
+    }
+
+	@Test
+	public void fractionalFrequencyAlphabetTest() {
+		// How to handle bases that don't divide evenly into the number of letters?
+		// Truncate if too long
+		String[] trainingData = {"abc"};
+		char[] expectedOutput = {'a', 'a', 'b', 'b', 'c'};
+		System.out.println(AlphabetGenerator.generateFrequencyAlphabet(5, trainingData));
+		assertArrayEquals(expectedOutput, AlphabetGenerator.generateFrequencyAlphabet(5, trainingData));
+		
+	}
+	
+	@Test
+	public void baseLessThanFrequencyAlphabetTest() {
+		// Truncate then calculate frequencies if the the base is less than the number of characters
+		
+		String[] trainingData = {"aaabcd"};
+		char[] expectedOutput = {'a', 'a', 'b'};
+		
+		assertArrayEquals(expectedOutput, AlphabetGenerator.generateFrequencyAlphabet(3, trainingData));
+	}
 }
