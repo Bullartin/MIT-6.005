@@ -51,23 +51,7 @@ public class Sudoku {
      *            makes a standard Sudoku puzzle with a 9x9 grid.
      */
     public Sudoku(int dim) {
-        this.dim = dim;
-        this.size = dim * dim;
-        this.square = new int[size][size];
-        this.occupies = new Variable[size][size][size];
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
-                this.square[i][j] = -1;
-            }
-        }
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
-                for (int k = 0; k < size; k++) {
-                    occupies[i][j][k] = new Variable(String.format("occupies(%d, %d, %d)", i, j, k));
-                }
-            }
-        }
-        checkRep();
+        this(dim, new int[dim*dim][dim*dim]);
     }
 
     /**
@@ -215,7 +199,6 @@ public class Sudoku {
                     }
                     Clause rrClause = new Clause();
                     for (int m = 0; m < size; m++) {
-                        // System.out.println(row[m]);
                         rrClause = rrClause.add(PosLiteral.make(row[m]));
                         Clause rClause = new Clause(NegLiteral.make(row[m]));
                         for (int n = m + 1; n < size; n++) {
@@ -241,10 +224,13 @@ public class Sudoku {
      */
     public Sudoku interpretSolution(Environment e) {
         Sudoku sudoku = new Sudoku(dim);
+        if (e == null) {
+            return sudoku;
+        }
         for (int i = 0; i < size; i++)
             for (int j = 0; j < size; j++)
                 for (int k = 0; k < size; k++) {
-                    if (e.get(occupies[i][j][k]).equals(Bool.TRUE)) {
+                    if (occupies[i][j][k].eval(e).equals(Bool.TRUE)) {
                         sudoku.square[i][j] = k;
                     }
                 }

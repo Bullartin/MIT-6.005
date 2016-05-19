@@ -21,7 +21,7 @@ public class Main {
                     new int[] { 2, 0, 3, 0 }, 
                     new int[] { 0, 0, 0, 0 }, 
         }));
-        timedSolveFromFile(3, "samples/sudoku_easy.txt");
+//        timedSolveFromFile(3, "samples/sudoku_easy2.txt");
 //        timedSolveFromFile(3, "samples/sudoku_hard.txt");        
     }
 
