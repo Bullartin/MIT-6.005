@@ -6,6 +6,8 @@ import sat.env.Environment;
 import sat.formula.Clause;
 import sat.formula.Formula;
 import sat.formula.Literal;
+import sat.formula.NegLiteral;
+import sat.formula.PosLiteral;
 
 /**
  * A simple DPLL SAT solver. See http://en.wikipedia.org/wiki/DPLL_algorithm
@@ -21,14 +23,6 @@ public class SATSolver {
      *         null if no such environment exists.
      */
     public static Environment solve(Formula formula) {
-        // if (formula.getSize() == 0) {
-        // return new Environment();
-        // }
-        // for (Clause c: formula) {
-        // if (c.isEmpty()) {
-        // return null;
-        // }
-        // }
         return solve(formula.getClauses(), new Environment());
     }
 
@@ -45,20 +39,44 @@ public class SATSolver {
      *         or null if no such environment exists.
      */
     private static Environment solve(ImList<Clause> clauses, Environment env) {
-        if (clauses.size() == 0) {
+        if (clauses.isEmpty()) {
             return env;
         }
-        Clause c = clauses.first(); // need pick smallest clauses
-        if (c.isEmpty()) {
-            return null;
+
+        int minSize = Integer.MAX_VALUE;
+        Clause minClause = new Clause();
+        for (Clause c : clauses) {
+            if (c.size() < minSize) {
+                minSize = c.size();
+                minClause = c;
+            }
+            if (c.isEmpty())
+                return null;
         }
-        Literal l = c.chooseLiteral();
+
+        Literal l = minClause.chooseLiteral();
         Environment result;
-        result = solve(substitute(clauses, l), env.putTrue(l.getVariable()));
-        if (result != null) {
-            return result;
+        if (minClause.isUnit()) {
+            if (l instanceof PosLiteral) {
+                result = solve(substitute(clauses, l), env.putTrue(l.getVariable()));
+            } else {
+                result = solve(substitute(clauses, l), env.putFalse(l.getVariable()));
+            }
+        } else {
+            ImList<Clause> temp = substitute(clauses, l);
+            if (l instanceof PosLiteral) {
+                result = solve(temp, env.putTrue(l.getVariable()));
+                if (result != null)
+                    return result;
+                result = solve(temp, env.putFalse(l.getVariable()));
+            } else {
+                result = solve(temp, env.putFalse(l.getVariable()));
+                if (result != null)
+                    return result;
+                result = solve(temp, env.putTrue(l.getVariable()));
+            }
         }
-        result = solve(substitute(clauses, l.getNegation()), env.putFalse(l.getVariable()));
+
         return result;
     }
 
@@ -82,5 +100,4 @@ public class SATSolver {
         }
         return result;
     }
-
 }
