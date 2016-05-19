@@ -6,34 +6,36 @@
  */
 package sat.formula;
 
+import immutable.EmptyImList;
 import immutable.ImList;
+import immutable.NonEmptyImList;
 
 import java.util.Iterator;
 
 import sat.env.Variable;
 
 /**
- * Formula represents an immutable boolean formula in
- * conjunctive normal form, intended to be solved by a
- * SAT solver.
+ * Formula represents an immutable boolean formula in conjunctive normal form,
+ * intended to be solved by a SAT solver.
  */
-public class Formula {
+public class Formula implements Iterable<Clause> {
     private final ImList<Clause> clauses;
     // Rep invariant:
-    //      clauses != null
-    //      clauses contains no null elements (ensured by spec of ImList)
+    // clauses != null
+    // clauses contains no null elements (ensured by spec of ImList)
     //
-    // Note: although a formula is intended to be a set,  
-    // the list may include duplicate clauses without any problems. 
+    // Note: although a formula is intended to be a set,
+    // the list may include duplicate clauses without any problems.
     // The cost of ensuring that the list has no duplicates is not worth paying.
     //
-    //    
-    //    Abstraction function:
-    //        The list of clauses c1,c2,...,cn represents 
-    //        the boolean formula (c1 and c2 and ... and cn)
-    //        
-    //        For example, if the list contains the two clauses (a,b) and (!c,d), then the
-    //        corresponding formula is (a or b) and (!c or d).
+    //
+    // Abstraction function:
+    // The list of clauses c1,c2,...,cn represents
+    // the boolean formula (c1 and c2 and ... and cn)
+    //
+    // For example, if the list contains the two clauses (a,b) and (!c,d), then
+    // the
+    // corresponding formula is (a or b) and (!c or d).
 
     void checkRep() {
         assert this.clauses != null : "SATProblem, Rep invariant: clauses non-null";
@@ -46,9 +48,8 @@ public class Formula {
      * @return the true problem
      */
     public Formula() {
-
-        // TODO: implement this.
-        throw new RuntimeException("not yet implemented.");
+        this(new EmptyImList<Clause>());
+        checkRep();
     }
 
     /**
@@ -58,8 +59,8 @@ public class Formula {
      * @return the problem with a single clause containing the literal l
      */
     public Formula(Variable l) {
-        // TODO: implement this.
-        throw new RuntimeException("not yet implemented.");
+        this(new Clause(PosLiteral.make(l)));
+        checkRep();
     }
 
     /**
@@ -68,8 +69,13 @@ public class Formula {
      * @return the problem with a single clause c
      */
     public Formula(Clause c) {
-        // TODO: implement this.
-        throw new RuntimeException("not yet implemented.");
+        this(new NonEmptyImList<Clause>(c));
+        checkRep();
+    }
+
+    private Formula(ImList<Clause> clauses) {
+        this.clauses = clauses;
+        checkRep();
     }
 
     /**
@@ -78,8 +84,7 @@ public class Formula {
      * @return a new problem with the clauses of this, but c added
      */
     public Formula addClause(Clause c) {
-        // TODO: implement this.
-        throw new RuntimeException("not yet implemented.");
+        return new Formula(clauses.add(c));
     }
 
     /**
@@ -88,8 +93,7 @@ public class Formula {
      * @return list of clauses
      */
     public ImList<Clause> getClauses() {
-        // TODO: implement this.
-        throw new RuntimeException("not yet implemented.");
+        return clauses;
     }
 
     /**
@@ -99,42 +103,65 @@ public class Formula {
      *         order
      */
     public Iterator<Clause> iterator() {
-        // TODO: implement this.
-        throw new RuntimeException("not yet implemented.");
+        return clauses.iterator();
     }
 
     /**
      * @return a new problem corresponding to the conjunction of this and p
      */
     public Formula and(Formula p) {
-        // TODO: implement this.
-        throw new RuntimeException("not yet implemented.");
+        Formula result = this;
+        for (Clause c : p) {
+            result = result.addClause(c);
+        }
+        return result;
     }
 
     /**
      * @return a new problem corresponding to the disjunction of this and p
      */
     public Formula or(Formula p) {
-        // TODO: implement this.
-        // Hint: you'll need to use the distributive law to preserve conjunctive normal form, i.e.:
-        //   to do (a & b) .or (c & d),
-        //   you'll need to make (a | b) & (a | c) & (b | c) & (b | d)        
-        throw new RuntimeException("not yet implemented.");
+        // Hint: you'll need to use the distributive law to preserve conjunctive
+        // normal form, i.e.:
+        // to do (a & b) .or (c & d),
+        // you'll need to make (a | c) & (a | c) & (b | c) & (b | d)
+        if (getSize() == 0) {
+            return p;
+        }
+        if (p.getSize() == 0) {
+            return this;
+        }
+        Formula result = new Formula();
+        for (Clause c1 : this) {
+            for (Clause c2 : p) {
+                result = result.addClause(c1.merge(c2));
+            }
+        }
+        return result;
     }
 
     /**
      * @return a new problem corresponding to the negation of this
      */
     public Formula not() {
-        // TODO: implement this.
-        // Hint: you'll need to apply DeMorgan's Laws (http://en.wikipedia.org/wiki/De_Morgan's_laws)
-        // to move the negation down to the literals, and the distributive law to preserve 
+        // Hint: you'll need to apply DeMorgan's Laws
+        // (http://en.wikipedia.org/wiki/De_Morgan's_laws)
+        // to move the negation down to the literals, and the distributive law
+        // to preserve
         // conjunctive normal form, i.e.:
-        //   if you start with (a | b) & c,
-        //   you'll need to make !((a | b) & c) 
-        //                       => (!a & !b) | !c            (moving negation down to the literals)
-        //                       => (!a | !c) & (!b | !c)    (conjunctive normal form)
-        throw new RuntimeException("not yet implemented.");
+        // if you start with (a | b) & c,
+        // you'll need to make !((a | b) & c)
+        // => (!a & !b) | !c (moving negation down to the literals)
+        // => (!a | !c) & (!b | !c) (conjunctive normal form)
+        Formula result = new Formula();
+        for (Clause c : this) {
+            Formula temp = new Formula();
+            for (Literal l : c) {
+                temp = temp.addClause(new Clause(l.getNegation()));
+            }
+            result = result.or(temp);
+        }
+        return result;
     }
 
     /**
@@ -142,8 +169,7 @@ public class Formula {
      * @return number of clauses in this
      */
     public int getSize() {
-        // TODO: implement this.
-        throw new RuntimeException("not yet implemented.");
+        return clauses.size();
     }
 
     /**
