@@ -6,11 +6,17 @@
  */
 package sudoku;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 
+import sat.env.Bool;
 import sat.env.Environment;
 import sat.env.Variable;
+import sat.formula.Clause;
 import sat.formula.Formula;
+import sat.formula.NegLiteral;
+import sat.formula.PosLiteral;
 
 /**
  * Sudoku is an immutable abstract datatype representing instances of Sudoku.
@@ -35,8 +41,6 @@ public class Sudoku {
     // Rep invariant
     // TODO: write your rep invariant here
     private void checkRep() {
-        // TODO: implement this.
-        throw new RuntimeException("not yet implemented.");
     }
 
     /**
@@ -47,8 +51,23 @@ public class Sudoku {
      *            makes a standard Sudoku puzzle with a 9x9 grid.
      */
     public Sudoku(int dim) {
-        // TODO: implement this.
-        throw new RuntimeException("not yet implemented.");
+        this.dim = dim;
+        this.size = dim * dim;
+        this.square = new int[size][size];
+        this.occupies = new Variable[size][size][size];
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                this.square[i][j] = -1;
+            }
+        }
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                for (int k = 0; k < size; k++) {
+                    occupies[i][j][k] = new Variable(String.format("occupies(%d, %d, %d)", i, j, k));
+                }
+            }
+        }
+        checkRep();
     }
 
     /**
@@ -59,20 +78,33 @@ public class Sudoku {
      *            the square in the ith row and jth column, contains 0 for a
      *            blank, else i to represent the digit i. So { { 0, 0, 0, 1 }, {
      *            2, 3, 0, 4 }, { 0, 0, 0, 3 }, { 4, 1, 0, 2 } } represents the
-     *            dimension-2 Sudoku grid: 
-     *            
-     *            ...1 
-     *            23.4 
-     *            ...3
-     *            41.2
+     *            dimension-2 Sudoku grid:
+     * 
+     *            ...1 23.4 ...3 41.2
      * 
      * @param dim
      *            dimension of puzzle Requires that dim*dim == square.length ==
      *            square[i].length for 0<=i<dim.
      */
     public Sudoku(int dim, int[][] square) {
-        // TODO: implement this.
-        throw new RuntimeException("not yet implemented.");
+        assert square.length == square[0].length;
+        this.dim = dim;
+        this.size = dim * dim;
+        this.square = new int[size][size];
+        this.occupies = new Variable[size][size][size];
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                this.square[i][j] = square[i][j] - 1;
+            }
+        }
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                for (int k = 0; k < size; k++) {
+                    occupies[i][j][k] = new Variable(String.format("occupies(%d, %d, %d)", i, j, k));
+                }
+            }
+        }
+        checkRep();
     }
 
     /**
@@ -93,10 +125,19 @@ public class Sudoku {
      * @throws ParseException
      *             if file has error in its format
      */
-    public static Sudoku fromFile(int dim, String filename) throws IOException,
-            ParseException {
-        // TODO: implement this.
-        throw new RuntimeException("not yet implemented.");
+    public static Sudoku fromFile(int dim, String filename) throws IOException, ParseException {
+        Sudoku sudoku = new Sudoku(dim);
+        BufferedReader br = new BufferedReader(new FileReader(filename));
+        int i = -1;
+        while (++i < sudoku.size) {
+            String str = br.readLine();
+            for (int j = 0; j < sudoku.size; j++)
+                if (str.charAt(j) == '.')
+                    sudoku.square[i][j] = -1;
+                else
+                    sudoku.square[i][j] = str.charAt(j) - '1';
+        }
+        return sudoku;
     }
 
     /**
@@ -111,17 +152,24 @@ public class Sudoku {
 
     /**
      * Produce readable string representation of this Sukoku grid, e.g. for a 4
-     * x 4 sudoku problem: 
-     *   12.4 
-     *   3412 
-     *   2.43 
-     *   4321
+     * x 4 sudoku problem: 12.4 3412 2.43 4321
      * 
      * @return a string corresponding to this grid
      */
     public String toString() {
-        // TODO: implement this.
-        throw new RuntimeException("not yet implemented.");
+        StringBuilder s = new StringBuilder();
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                int temp = square[i][j];
+                if (temp == -1) {
+                    s.append(".");
+                } else {
+                    s.append(String.valueOf(temp + 1));
+                }
+            }
+            s.append("\n");
+        }
+        return String.valueOf(s);
     }
 
     /**
@@ -130,9 +178,56 @@ public class Sudoku {
      *         occupies the entry in row i, column j
      */
     public Formula getProblem() {
+        Formula f = new Formula();
 
-        // TODO: implement this.
-        throw new RuntimeException("not yet implemented.");
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                Clause rrClause = new Clause();
+                Clause ccClause = new Clause();
+                if (square[i][j] != -1) {
+                    f = f.addClause(new Clause(PosLiteral.make(occupies[i][j][square[i][j]])));
+                }
+                for (int k = 0; k < size; k++) {
+                    Clause kclause = new Clause(NegLiteral.make(occupies[i][j][k]));
+                    Clause rClause = new Clause(NegLiteral.make(occupies[i][k][j]));
+                    Clause cClause = new Clause(NegLiteral.make(occupies[k][i][j]));
+                    rrClause = rrClause.add(PosLiteral.make(occupies[i][k][j]));
+                    ccClause = ccClause.add(PosLiteral.make(occupies[k][i][j]));
+                    for (int m = k + 1; m < size; m++) {
+                        f = f.addClause(kclause.add(NegLiteral.make(occupies[i][j][m])));
+                        f = f.addClause(rClause.add(NegLiteral.make(occupies[i][m][j])));
+                        f = f.addClause(cClause.add(NegLiteral.make(occupies[m][i][j])));
+                    }
+                }
+                f = f.addClause(rrClause);
+                f = f.addClause(ccClause);
+            }
+        }
+
+        for (int ix = 0; ix < dim; ix++) {
+            for (int jx = 0; jx < dim; jx++) {
+                for (int k = 0; k < size; k++) {
+                    Variable[] row = new Variable[size];
+                    for (int i = dim * ix; i < dim * (ix + 1); i++) {
+                        for (int j = dim * jx; j < dim * (jx + 1); j++) {
+                            row[(i - ix * dim) * dim + (j - jx * dim)] = occupies[i][j][k];
+                        }
+                    }
+                    Clause rrClause = new Clause();
+                    for (int m = 0; m < size; m++) {
+                        // System.out.println(row[m]);
+                        rrClause = rrClause.add(PosLiteral.make(row[m]));
+                        Clause rClause = new Clause(NegLiteral.make(row[m]));
+                        for (int n = m + 1; n < size; n++) {
+                            f = f.addClause(rClause.add(NegLiteral.make(row[n])));
+                        }
+                    }
+                    f = f.addClause(rrClause);
+                }
+            }
+        }
+
+        return f;
     }
 
     /**
@@ -145,9 +240,15 @@ public class Sudoku {
      *         blank entries.
      */
     public Sudoku interpretSolution(Environment e) {
-
-        // TODO: implement this.
-        throw new RuntimeException("not yet implemented.");
+        Sudoku sudoku = new Sudoku(dim);
+        for (int i = 0; i < size; i++)
+            for (int j = 0; j < size; j++)
+                for (int k = 0; k < size; k++) {
+                    if (e.get(occupies[i][j][k]).equals(Bool.TRUE)) {
+                        sudoku.square[i][j] = k;
+                    }
+                }
+        return sudoku;
     }
 
 }
