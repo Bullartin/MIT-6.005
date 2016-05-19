@@ -1,5 +1,6 @@
 package sat;
 
+import immutable.EmptyImList;
 import immutable.ImList;
 import sat.env.Environment;
 import sat.formula.Clause;
@@ -20,8 +21,15 @@ public class SATSolver {
      *         null if no such environment exists.
      */
     public static Environment solve(Formula formula) {
-        // TODO: implement this.
-        throw new RuntimeException("not yet implemented.");
+        // if (formula.getSize() == 0) {
+        // return new Environment();
+        // }
+        // for (Clause c: formula) {
+        // if (c.isEmpty()) {
+        // return null;
+        // }
+        // }
+        return solve(formula.getClauses(), new Environment());
     }
 
     /**
@@ -37,8 +45,21 @@ public class SATSolver {
      *         or null if no such environment exists.
      */
     private static Environment solve(ImList<Clause> clauses, Environment env) {
-        // TODO: implement this.
-        throw new RuntimeException("not yet implemented.");
+        if (clauses.size() == 0) {
+            return env;
+        }
+        Clause c = clauses.first(); // need pick smallest clauses
+        if (c.isEmpty()) {
+            return null;
+        }
+        Literal l = c.chooseLiteral();
+        Environment result;
+        result = solve(substitute(clauses, l), env.putTrue(l.getVariable()));
+        if (result != null) {
+            return result;
+        }
+        result = solve(substitute(clauses, l.getNegation()), env.putFalse(l.getVariable()));
+        return result;
     }
 
     /**
@@ -51,10 +72,15 @@ public class SATSolver {
      *            , a literal to set to true
      * @return a new list of clauses resulting from setting l to true
      */
-    private static ImList<Clause> substitute(ImList<Clause> clauses,
-            Literal l) {
-        // TODO: implement this.
-        throw new RuntimeException("not yet implemented.");
+    private static ImList<Clause> substitute(ImList<Clause> clauses, Literal l) {
+        ImList<Clause> result = new EmptyImList<Clause>();
+        for (Clause c : clauses) {
+            Clause temp = c.reduce(l);
+            if (temp != null) {
+                result = result.add(c.reduce(l));
+            }
+        }
+        return result;
     }
 
 }
