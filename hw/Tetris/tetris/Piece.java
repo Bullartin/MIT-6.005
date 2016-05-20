@@ -36,6 +36,21 @@ public class Piece {
 	*/
 	public Piece(TPoint[] points) {
 		// YOUR CODE HERE
+	    body = new TPoint[points.length];
+	    for (int i = 0; i < points.length; i++) {
+	        TPoint point = points[i];
+	        body[i] = new TPoint(point);  // defensive copy
+	        width = Math.max(width, point.x+1);
+	        height = Math.max(height, point.y+1);
+	    }
+	    skirt = new int[width];
+	    for (int i = 0; i < skirt.length; i++) {
+	        skirt[i] = Integer.MAX_VALUE;
+	    }
+	    for (TPoint point: points) {
+	        skirt[point.x] = Math.min(skirt[point.x], point.y);
+	    }
+//	    next = computeNextRotation(); 
 	}
 	
 
@@ -88,7 +103,14 @@ public class Piece {
 	 rotated from the receiver.
 	 */
 	public Piece computeNextRotation() {
-		return null; // YOUR CODE HERE
+	    TPoint[] others = new TPoint[body.length];
+	    for (int i = 0; i < body.length; i++) {
+	        TPoint point = body[i];
+	        int new_x = height - 1 - point.y;
+	        int new_y = point.x;
+	        others[i] = new TPoint(new_x, new_y);
+	    }
+	    return new Piece(others);
 	}
 
 	/**
@@ -121,6 +143,19 @@ public class Piece {
 		Piece other = (Piece)obj;
 		
 		// YOUR CODE HERE
+		boolean find;
+		for (TPoint p1: getBody()) {
+		    find = false;
+		    for (TPoint p2: other.getBody()) {
+		        if (p1.equals(p2)) {
+		            find = true;
+		            break;
+		        }
+		    }
+		    if (!find) {
+		        return false;
+		    }
+		}
 		return true;
 	}
 
@@ -187,7 +222,14 @@ public class Piece {
 	 to the first piece.
 	*/
 	private static Piece makeFastRotations(Piece root) {
-		return null; // YOUR CODE HERE
+	    root.next = root.computeNextRotation();
+	    Piece cur = root.next;
+	    root.next = cur;
+	    while (!cur.equals(root)) {
+	        cur.next = cur.computeNextRotation();
+	        cur = cur.next;
+	    }
+	    return root;
 	}
 	
 	

@@ -63,5 +63,23 @@ public class PieceTest {
 		assertTrue(Arrays.equals(new int[] {1, 0}, sRotated.getSkirt()));
 	}
 	
+	// Test rotation is circular
+	@Test
+	public void testRotaionCircular() {
+	    assertEquals(pyr1, pyr4.computeNextRotation());
+	}
+	
+	
+	// Test fast rotation
+	@Test
+	public void testFastRotation() {
+	    Piece[] pieces = Piece.getPieces();    // the array of root pieces
+	    Piece pyr1 = pieces[Piece.PYRAMID];
+	    assertEquals(3, pyr1.getWidth());
+        assertEquals(2, pyr1.getHeight());
+        Piece pyr2 = pyr1.fastRotation();
+        assertEquals(2, pyr2.getWidth());
+        assertEquals(3, pyr2.getHeight());
+	}
 	
 }
