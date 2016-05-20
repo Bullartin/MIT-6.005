@@ -6,7 +6,7 @@ import org.junit.*;
 
 public class BoardTest {
 	Board b;
-	Piece pyr1, pyr2, pyr3, pyr4, s, sRotated;
+	Piece pyr1, pyr2, pyr3, pyr4, s, sRotated, l;
 
 	// This shows how to build things in setUp() to re-use
 	// across tests.
@@ -26,6 +26,8 @@ public class BoardTest {
 		s = new Piece(Piece.S1_STR);
 		sRotated = s.computeNextRotation();
 		
+		l = new Piece(Piece.STICK_STR);
+		
 		b.place(pyr1, 0, 0);
 	}
 	
@@ -34,10 +36,20 @@ public class BoardTest {
 	public void testSample1() {
 		assertEquals(1, b.getColumnHeight(0));
 		assertEquals(2, b.getColumnHeight(1));
+		assertEquals(1, b.getColumnHeight(2));
 		assertEquals(2, b.getMaxHeight());
 		assertEquals(3, b.getRowWidth(0));
 		assertEquals(1, b.getRowWidth(1));
 		assertEquals(0, b.getRowWidth(2));
+		
+		assertEquals(1, b.clearRows());
+		assertEquals(0, b.getColumnHeight(0));
+        assertEquals(1, b.getColumnHeight(1));
+        assertEquals(0, b.getColumnHeight(2));
+        assertEquals(1, b.getMaxHeight());
+        assertEquals(1, b.getRowWidth(0));
+        assertEquals(0, b.getRowWidth(1));
+        assertEquals(0, b.getRowWidth(2));
 	}
 	
 	// Place sRotated into the board, then check some measures
@@ -50,11 +62,52 @@ public class BoardTest {
 		assertEquals(4, b.getColumnHeight(1));
 		assertEquals(3, b.getColumnHeight(2));
 		assertEquals(4, b.getMaxHeight());
+		// test undo
+		b.undo();
+		assertEquals(1, b.getColumnHeight(0));
+        assertEquals(2, b.getColumnHeight(1));
+        assertEquals(2, b.getMaxHeight());
+        assertEquals(3, b.getRowWidth(0));
+        assertEquals(1, b.getRowWidth(1));
+        assertEquals(0, b.getRowWidth(2));
+        // undo twice should have no impact
+        b.undo();
+        assertEquals(1, b.getColumnHeight(0));
+        assertEquals(2, b.getColumnHeight(1));
+        assertEquals(2, b.getMaxHeight());
+        assertEquals(3, b.getRowWidth(0));
+        assertEquals(1, b.getRowWidth(1));
+        assertEquals(0, b.getRowWidth(2));
 	}
 	
-	// Make  more tests, by putting together longer series of 
-	// place, clearRows, undo, place ... checking a few col/row/max
-	// numbers that the board looks right after the operations.
+	@Test
+    public void testSample3() {
+        b.commit();
+        int result = b.place(sRotated, 1, 1);
+        assertEquals(Board.PLACE_OK, result);
+        assertEquals(1, b.getColumnHeight(0));
+        assertEquals(4, b.getColumnHeight(1));
+        assertEquals(3, b.getColumnHeight(2));
+        assertEquals(4, b.getMaxHeight());
+        assertEquals(3, b.getRowWidth(0));
+        assertEquals(2, b.getRowWidth(1));
+        assertEquals(2, b.getRowWidth(2));
+        assertEquals(1, b.getRowWidth(3));
+        
+        assertEquals(1, b.clearRows());
+//        System.out.println(b);
+	}
 	
-	
+	@Test
+    public void testSample4() {
+        b.commit();
+        int result = b.place(sRotated, 1, 1);
+        assertEquals(Board.PLACE_OK, result);
+        b.commit();
+//        System.out.println(b);
+        result = b.place(l, 0, 1);
+        assertEquals(Board.PLACE_ROW_FILLED, result);
+        assertEquals(3, b.clearRows());
+//        System.out.println(b);
+    }
 }
