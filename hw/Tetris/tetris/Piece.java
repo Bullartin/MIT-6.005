@@ -222,12 +222,20 @@ public class Piece {
 	 to the first piece.
 	*/
 	private static Piece makeFastRotations(Piece root) {
-	    root.next = root.computeNextRotation();
-	    Piece cur = root.next;
-	    root.next = cur;
-	    while (!cur.equals(root)) {
-	        cur.next = cur.computeNextRotation();
-	        cur = cur.next;
+	    Piece cur = root.computeNextRotation();
+	    if (cur.equals(root)) {
+	        root.next = root;
+	    } else {
+	        root.next= cur;
+	        while (!root.equals(cur)) {
+	            Piece next = cur.computeNextRotation();
+	            if (!root.equals(next)) {
+	                cur.next = next;
+	            } else {
+	                cur.next = root;
+	            }
+	            cur = cur.next;
+	        }
 	    }
 	    return root;
 	}
